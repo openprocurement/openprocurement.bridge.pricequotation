@@ -1,0 +1,22 @@
+before_script:
+  - eval `ssh-agent -s` && ssh-add
+  - virtualenv --clear .
+  - ./bin/pip install -r requirements-dev.txt
+  - ./bin/pip install -e .
+
+stages:
+  - test
+
+
+test_sanbox_true:
+  stage: test
+  variables:
+    SANDBOX_MODE: 'True'
+  script:
+    - bin/pytest openprocurement/bridge/pricequotation/tests/ --cov=openprocurement/bridge/pricequotation
+
+
+test_sanbox_false:
+  stage: test
+  script:
+    - bin/pytest openprocurement/bridge/pricequotation/tests/ --cov=openprocurement/bridge/pricequotation
