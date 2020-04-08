@@ -11,7 +11,7 @@ fill additional information from eCatalogues, such as:
 
 ```
 
-And switch tender to `active.tendering` status and switch to `draft.invalid` if bot receive `HTTP 404` from eCatalogues or shortlistedFirms list will be empty.
+And switch tender to `active.tendering` status and switch to `draft.unsuccessful` if bot receive `HTTP 404` from eCatalogues or shortlistedFirms list will be empty.
 
 ## Development
 
