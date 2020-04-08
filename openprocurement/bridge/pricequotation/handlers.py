@@ -75,7 +75,7 @@ class PQSecondPhaseCommit(HandlerTemplate):
                                                    user_agent="priceQuotationBot")
 
     def decline_resource(self, resource):
-        status = "draft.invalid"
+        status = "draft.unsuccessful"
         self.tender_client.patch_resource_item(resource["id"], {"data": {"status": status}})
         logger.info("Switch tender {} to `{}`".format(resource["id"], status),
                     extra=journal_context({"MESSAGE_ID": "tender_switched"},

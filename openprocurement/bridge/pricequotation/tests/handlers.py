@@ -97,7 +97,7 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
         handler.process_resource(resource.data)
         self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
         self.assertEquals(handler.tender_client.patch_resource_item.mock_calls[0],
-                          call(resource.data.id, {'data': {'status': 'draft.invalid'}}))
+                          call(resource.data.id, {'data': {'status': 'draft.unsuccessful'}}))
         handler.tender_client.patch_resource_item.reset_mock()
 
         # test not found category in catalogue
@@ -107,7 +107,7 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
         handler.process_resource(resource.data)
         self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
         self.assertEquals(handler.tender_client.patch_resource_item.mock_calls[0],
-                          call(resource.data.id, {'data': {'status': 'draft.invalid'}}))
+                          call(resource.data.id, {'data': {'status': 'draft.unsuccessful'}}))
         handler.tender_client.patch_resource_item.reset_mock()
 
         # test with empty list supplier in catalogue category
@@ -117,7 +117,7 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
         handler.process_resource(resource.data)
         self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
         self.assertEquals(handler.tender_client.patch_resource_item.mock_calls[0],
-                          call(resource.data.id, {'data': {'status': 'draft.invalid'}}))
+                          call(resource.data.id, {'data': {'status': 'draft.unsuccessful'}}))
         handler.tender_client.patch_resource_item.reset_mock()
 
         # test successfull switch to `active.tendering`
