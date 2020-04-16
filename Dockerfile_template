@@ -6,12 +6,13 @@ WORKDIR /opt/bridge
 COPY . /opt/bridge
 RUN pip install --upgrade pip && pip install -r requirements-dev.txt
 RUN pip install -e .
+RUN apt-get clean && rm ~/.netrc
 
 ENV TZ=Europe/Kiev
 ENV LANG="en_US.UTF-8"
 ENV LC_ALL="en_US.UTF-8"
 ENV LC_LANG="en_US.UTF-8"
 ENV PYTHONIOENCODING="UTF-8"
-
+ENV PYTHONPATH="/opt/bridge/:${PYTHONPATH}"
 
 CMD ["/usr/local/bin/databridge", "/etc/databridge.yaml"]
