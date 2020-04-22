@@ -6,7 +6,7 @@ from openprocurement.bridge.pricequotation.utils import journal_context
 from retrying import retry
 from tooz import coordination
 
-from openprocurement_client.exceptions import RequestFailed, ResourceGone, ResourceNotFound
+from openprocurement_client.exceptions import RequestFailed, ResourceGone, ResourceNotFound, UnprocessableEntity
 from openprocurement_client.resources.ecatalogues import ECataloguesClient
 
 config = {
@@ -133,4 +133,8 @@ class PQSecondPhaseCommit(HandlerTemplate):
                                                   params={"TENDER_ID": resource["id"], "STATUS": status}))
             except ResourceNotFound:
                 logger.critical("Tender {} not found".format(resource["id"]))
+            except UnprocessableEntity as e:
+                logger.critical("Fail patch tender {} with error: {}".format(resource["id"], e.message))
+                self.tender_client.patch_resource_item(resource["id"], {"data": {"status": "draft.unsuccessful"}})
+                logger.info("Switch tender {} to draft.unsuccessful".format(resource["id"]))
         self._put_resource_in_cache(resource)
