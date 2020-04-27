@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import logging
+from copy import deepcopy
 
 from openprocurement.bridge.basic.handlers import HandlerTemplate
 from openprocurement.bridge.pricequotation.utils import journal_context
@@ -114,17 +115,21 @@ class PQSecondPhaseCommit(HandlerTemplate):
             try:
                 items = []
                 for item in resource["items"]:
-                    item.update({"unit": profile.data.unit,
-                                 "classification": profile.data.classification,
-                                 "value": profile.data.value})
+                    item.update({"unit": profile.data.unit, "classification": profile.data.classification})
                     items.append(item)
                 shortlisted_firms = [sf for sf in suppliers.data if sf.status == 'active']
+                for criterion in profile.data.criteria:
+                    criterion.pop("code", None)
+                value = deepcopy(profile.data.value)
+                amount = sum([item["quantity"] for item in items]) * profile.data.value.amount
+                value["amount"] = amount
                 data = {
                     "data": {
                         "criteria": profile.data.criteria,
                         "items": items,
                         "shortlistedFirms": shortlisted_firms,
-                        "status": status
+                        "status": status,
+                        "value": value
                     }
                 }
                 self.tender_client.patch_resource_item(resource["id"], data)
