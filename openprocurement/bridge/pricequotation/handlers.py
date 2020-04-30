@@ -95,7 +95,7 @@ class PQSecondPhaseCommit(HandlerTemplate):
             return
         with lock:
             try:
-                profile = self.catalogues_client.profiles.get_profile(resource["profile"])
+                profile = self.catalogues_client.profiles.get_profile(resource.get('profile', ''))
             except ResourceNotFound:
                 logger.error("Pofile {} not found in catalouges.".format(resource["profile"]))
                 self.decline_resource(resource)
@@ -126,6 +126,8 @@ class PQSecondPhaseCommit(HandlerTemplate):
                     criterion.pop("code", None)
                     for rq_group in criterion.requirementGroups:
                         for rq in rq_group.requirements:
+                            if rq.dataType == 'string':
+                                continue
                             for key in requirement_keys:
                                 if key in rq:
                                     rq[key] = str(rq[key])
