@@ -95,9 +95,9 @@ class PQSecondPhaseCommit(HandlerTemplate):
             return
         with lock:
             try:
-                profile = self.catalogues_client.profiles.get_profile(resource.get('profile', ''))
+                profile = self.catalogues_client.profiles.get_profile(resource.get("profile", ""))
             except ResourceNotFound:
-                logger.error("Pofile {} not found in catalouges.".format(resource["profile"]))
+                logger.error("Pofile {} not found in catalouges.".format(resource.get("profile", "")))
                 self.decline_resource(resource)
                 return
 
