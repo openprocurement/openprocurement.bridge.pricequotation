@@ -115,6 +115,8 @@ class PQSecondPhaseCommit(HandlerTemplate):
             try:
                 items = []
                 for item in resource["items"]:
+                    if "additionalClassifications" in profile.data:
+                        item["additionalClassifications"] = profile.data.additionalClassifications
                     item.update({"unit": profile.data.unit, "classification": profile.data.classification})
                     items.append(item)
                 shortlisted_firms = [sf for sf in suppliers.data if sf.status == 'active']

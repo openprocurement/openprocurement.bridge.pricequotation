@@ -132,6 +132,8 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
 
         items = deepcopy(TEST_TENDER['data']['items'])
         items[0]['classification'] = TEST_PROFILE['data']['classification']
+        if 'additionalClassifications' in TEST_PROFILE['data']:
+            items[0]['additionalClassifications'] = TEST_PROFILE['data']['additionalClassifications']
         items[0]['unit'] = TEST_PROFILE['data']['unit']
         value = deepcopy(TEST_PROFILE['data']['value'])
         amount = sum([item["quantity"] for item in items]) * TEST_PROFILE['data']['value']['amount']
