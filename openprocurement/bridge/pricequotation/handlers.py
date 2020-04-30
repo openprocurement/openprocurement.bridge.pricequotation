@@ -54,6 +54,8 @@ CONFIG_MAPPING = {
     "output_public_resources_api_server": "public_resources_api_server"
 }
 
+requirement_keys = ("minValue", "maxValue", "expectedValue")
+
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +124,12 @@ class PQSecondPhaseCommit(HandlerTemplate):
                 shortlisted_firms = [sf for sf in suppliers.data if sf.status == 'active']
                 for criterion in profile.data.criteria:
                     criterion.pop("code", None)
+                    for rq_group in criterion.requirementGroups:
+                        for rq in rq_group.requirements:
+                            for key in requirement_keys:
+                                if key in rq:
+                                    rq[key] = str(rq[key])
+
                 value = deepcopy(profile.data.value)
                 amount = sum([item["quantity"] for item in items]) * profile.data.value.amount
                 value["amount"] = amount

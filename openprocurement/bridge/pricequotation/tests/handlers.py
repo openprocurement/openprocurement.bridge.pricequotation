@@ -4,7 +4,7 @@ from datetime import datetime
 
 from mock import MagicMock, call, patch
 from munch import munchify
-from openprocurement.bridge.pricequotation.handlers import PQSecondPhaseCommit
+from openprocurement.bridge.pricequotation.handlers import PQSecondPhaseCommit, requirement_keys
 from openprocurement.bridge.pricequotation.tests.base import TEST_CATEGORY, TEST_PROFILE, TEST_TENDER, AdaptiveCache
 
 from openprocurement_client.exceptions import ResourceGone, ResourceNotFound
@@ -142,6 +142,11 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
         criteria = deepcopy(TEST_PROFILE['data']['criteria'])
         for criterion in criteria:
             criterion.pop('code', None)
+            for rq_group in criterion['requirementGroups']:
+                for rq in rq_group['requirements']:
+                    for key in requirement_keys:
+                        if key in rq:
+                            rq[key] = str(rq[key])
         patch_data = {
             'data': {
                 'criteria': criteria,
