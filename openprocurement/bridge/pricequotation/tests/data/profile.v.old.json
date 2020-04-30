@@ -1,5 +1,17 @@
 {
     "data": {
+        "additionalClassifications": [
+            {
+                "description": "Enoxaparin",
+                "id": "enoxaparin",
+                "scheme": "INN"
+            },
+            {
+                "description": "B01AB05",
+                "id": "B01AB05",
+                "scheme": "ATC"
+            }
+        ],
         "classification": {
             "description": "Комп’ютерне обладнанн",
             "id": "30230000-0",
