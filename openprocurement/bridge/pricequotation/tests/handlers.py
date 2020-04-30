@@ -144,6 +144,8 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
             criterion.pop('code', None)
             for rq_group in criterion['requirementGroups']:
                 for rq in rq_group['requirements']:
+                    if rq['dataType'] == 'string':
+                        continue
                     for key in requirement_keys:
                         if key in rq:
                             rq[key] = str(rq[key])
