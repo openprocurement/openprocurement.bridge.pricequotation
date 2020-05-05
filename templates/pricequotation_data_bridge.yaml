@@ -1,7 +1,7 @@
 main:
     # список обробників зазвичай імя відповідає tender.procurementMethodType, можливі значення `pqSecondPhaseCommit`
     handlers:
-      - priceQuotationBot
+      - priceQuotation
     worker_config:
       # тип воркера може бути contracting для контрактингу і РУ або  edge цей ключ задає поведінку обробки
       # для отриманих обєктів.
@@ -29,10 +29,14 @@ main:
       bulk_save_interval: 0.5
       # конфігурація для хендлера closepricequotationUA
       handler_priceQuotationBot:
+        output_resource: tenders
         # Е-Каталог АРІ сервер
-        catalogue_api_server: "https://catalog-test.prozorro.ua"
+        catalogue_api_server: ${options['catalogue_api_server']}
         # Весрія API E-Каталога
-        catalogue_api_version: 0
+        catalogue_api_version: ${options['catalogue_api_version']}
+    coordinator_config:
+      connection_url: ${options['coordinator_connection_url']}
+      coordinator_name: ${options['coordinator_name']}
     storage_config:
       # required for databridge
       # для контрактингу/РУ це значення може бути лише redis
@@ -73,16 +77,16 @@ main:
       queue_size: 101
     # додаткові параметри клієнта
     extra_params:
-        # тип обєктів _all_ означає всі включаючи тестові
-        mode: "_all_"
-        # к-ть елементів на сторінці
-        limit: 100
-        # які ще поля повертати у відповіді крім id, dateModified
-        opt_fields: "status,procurementMethodType"
+      # тип обєктів _all_ означає всі включаючи тестові
+      mode: "_all_"
+      # к-ть елементів на сторінці
+      limit: 100
+      # які ще поля повертати у відповіді крім id, dateModified
+      opt_fields: "status,procurementMethodType"
     # АРІ сервер RW (main)
     resources_api_server: ${options['resources_api_server']}
     # версія API
-    resources_api_version: "2.4"
+    resources_api_version: ${options['resources_api_version']}
     # Токен для здійсення операцій над обєктами
     resources_api_token: ${options['resources_api_token']}
     # Сервер публічного API RO (public)
@@ -108,7 +112,7 @@ main:
     # Інтервал з яким перевіряти роботу потоків та їх показників
     watch_interval: 10
     # Назва для агенту щоб при навантаженнях на АРІ сервери можна було зідентифікувати джерело
-    user_agent: 'priceQuotationBot'
+    user_agent: 'bot.priceQuotation'
     # Розмір основної черги, можливі значеня будь-яке позиитивне число або -1 якщо не потрібно обмежень на розмір черги
     # Черга в якій містяться лише відфільтровані обєкти
     resource_items_queue_size: 100
@@ -122,7 +126,6 @@ main:
     perfomance_window: 300
   version: 1
 
-
   formatters:
     simple:
       format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -131,22 +134,22 @@ main:
     console:
       class: logging.StreamHandler
       level: INFO
-      formatter: simple
+      formatter: json
       stream: ext://sys.stdout
 
-  {% if 'journal' in options and options['journal'] %}\
-    journal:
-      class: ExtendedJournalHandler.ExtendedJournalHandler
-      level: INFO
-      SYSLOG_IDENTIFIER: AGREEMENT_DATA_BRIDGE
-  {% end %}
+{% if 'journal' in options and options['journal'] %}\
+  journal:
+    class: ExtendedJournalHandler.ExtendedJournalHandler
+    level: INFO
+    SYSLOG_IDENTIFIER: PRICEQUOTATION_DATA_BRIDGE
+{% end %}
 
-  {% if 'statsd' in options and options['statsd'] %}\
-    statsd:
-      level: DEBUG
-      class: statsdhandler.StatsdHandler
-      config_path: "${options['handler_config']}"
-  {% end %}
+{% if 'statsd' in options and options['statsd'] %}\
+  statsd:
+    level: DEBUG
+    class: statsdhandler.StatsdHandler
+    config_path: "${options['handler_config']}"
+{% end %}
 
   loggers:
     openprocurement.bridge.basic.databridge:
