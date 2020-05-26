@@ -132,16 +132,12 @@ class PQSecondPhaseCommit(HandlerTemplate):
                                 if key in rq:
                                     rq[key] = str(rq[key])
 
-                value = deepcopy(profile.data.value)
-                amount = sum([item["quantity"] for item in items]) * profile.data.value.amount
-                value["amount"] = amount
                 data = {
                     "data": {
                         "criteria": profile.data.criteria,
                         "items": items,
                         "shortlistedFirms": shortlisted_firms,
-                        "status": status,
-                        "value": value
+                        "status": status
                     }
                 }
                 self.tender_client.patch_resource_item(resource["id"], data)

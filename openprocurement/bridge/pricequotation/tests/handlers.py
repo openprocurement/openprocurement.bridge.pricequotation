@@ -135,9 +135,6 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
         if 'additionalClassifications' in TEST_PROFILE['data']:
             items[0]['additionalClassifications'] = TEST_PROFILE['data']['additionalClassifications']
         items[0]['unit'] = TEST_PROFILE['data']['unit']
-        value = deepcopy(TEST_PROFILE['data']['value'])
-        amount = sum([item["quantity"] for item in items]) * TEST_PROFILE['data']['value']['amount']
-        value['amount'] = amount
         shortlisted_firms = [s for s in TEST_CATEGORY['data']['suppliers'] if s['status'] == 'active']
         criteria = deepcopy(TEST_PROFILE['data']['criteria'])
         for criterion in criteria:
@@ -154,8 +151,7 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
                 'criteria': criteria,
                 'status': 'active.tendering',
                 'items': items,
-                'shortlistedFirms': shortlisted_firms,
-                'value': value
+                'shortlistedFirms': shortlisted_firms
             }
         }
         self.assertEquals(handler.tender_client.patch_resource_item.mock_calls[0], call(resource.data.id, patch_data))
