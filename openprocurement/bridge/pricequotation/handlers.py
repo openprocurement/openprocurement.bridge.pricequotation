@@ -29,17 +29,10 @@ config = {
     "output_resources_api_server": "",
     "output_public_resources_api_server": "",
     "output_resource": "agreements",
-    "handler_cfaua": {
-        "resources_api_token": "",
-        "output_resources_api_token": "agreement_token",
-        "resources_api_version": "",
-        "input_resources_api_token": "tender_token",
-        "input_resources_api_server": "",
-        "input_public_resources_api_server": "",
-        "input_resource": "tenders",
-        "output_resources_api_server": "",
-        "output_public_resources_api_server": "",
-        "output_resource": "agreements"
+    "handler_priceQuotationBot": {
+        "catalogue_api_server": "",
+        "catalogue_api_version": "",
+        "output_resource": "tenders"
     }
 }
 
