@@ -95,7 +95,9 @@ class PQSecondPhaseCommit(HandlerTemplate):
                 return
 
             if profile.data.status != "active":
-                logger.error("Pofile {} status '{}' not equal 'active'".format(profile.data.id, profile.data.status))
+                logger.error("Pofile {} status '{}' not equal 'active', tender {}".format(profile.data.id,
+                                                                                          profile.data.status,
+                                                                                          resource["id"]))
                 self.decline_resource(resource)
                 return
 
