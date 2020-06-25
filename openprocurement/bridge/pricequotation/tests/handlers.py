@@ -100,6 +100,17 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
                           call(resource.data.id, {'data': {'status': 'draft.unsuccessful'}}))
         handler.tender_client.patch_resource_item.reset_mock()
 
+        # test profile not in active status
+        _profile = deepcopy(TEST_PROFILE)
+        _profile['data']['status'] = 'hidden'
+        handler.catalogues_client.profiles.get_profile.side_effect = (munchify(_profile),)
+
+        handler.process_resource(resource.data)
+        self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
+        self.assertEquals(handler.tender_client.patch_resource_item.mock_calls[0],
+                          call(resource.data.id, {'data': {'status': 'draft.unsuccessful'}}))
+        handler.tender_client.patch_resource_item.reset_mock()
+
         # test not found category in catalogue
         handler.catalogues_client.profiles.get_profile.side_effect = (munchify(deepcopy(TEST_PROFILE)),)
         handler.catalogues_client.categories.get_category_suppliers.side_effect = (not_found_exception,)

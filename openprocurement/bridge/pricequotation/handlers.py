@@ -94,6 +94,11 @@ class PQSecondPhaseCommit(HandlerTemplate):
                 self.decline_resource(resource)
                 return
 
+            if profile.data.status != "active":
+                logger.error("Pofile {} status '{}' not equal 'active'".format(profile.data.id, profile.data.status))
+                self.decline_resource(resource)
+                return
+
             try:
                 suppliers = self.catalogues_client.categories.get_category_suppliers(profile.data.relatedCategory)
                 if len(suppliers.data) == 0:
