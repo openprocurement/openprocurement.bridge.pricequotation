@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import unittest
 from copy import deepcopy
 from datetime import datetime
@@ -95,9 +96,12 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
         handler.catalogues_client.profiles.get_profile.side_effect = (not_found_exception,)
 
         handler.process_resource(resource.data)
+        reason = u"Обраний профіль не існує в системі Prozorro.Market"
         self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
-        self.assertEquals(handler.tender_client.patch_resource_item.mock_calls[0],
-                          call(resource.data.id, {'data': {'status': 'draft.unsuccessful'}}))
+        self.assertEquals(
+            handler.tender_client.patch_resource_item.mock_calls[0],
+            call(resource.data.id, {'data': {'status': 'draft.unsuccessful', 'unsuccessfulReason': reason}})
+        )
         handler.tender_client.patch_resource_item.reset_mock()
 
         # test profile not in active status
@@ -106,29 +110,26 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
         handler.catalogues_client.profiles.get_profile.side_effect = (munchify(_profile),)
 
         handler.process_resource(resource.data)
+        reason = u"Обраний профіль неактивний в системі Prozorro.Market"
         self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
-        self.assertEquals(handler.tender_client.patch_resource_item.mock_calls[0],
-                          call(resource.data.id, {'data': {'status': 'draft.unsuccessful'}}))
-        handler.tender_client.patch_resource_item.reset_mock()
-
-        # test not found category in catalogue
-        handler.catalogues_client.profiles.get_profile.side_effect = (munchify(deepcopy(TEST_PROFILE)),)
-        handler.catalogues_client.categories.get_category_suppliers.side_effect = (not_found_exception,)
-
-        handler.process_resource(resource.data)
-        self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
-        self.assertEquals(handler.tender_client.patch_resource_item.mock_calls[0],
-                          call(resource.data.id, {'data': {'status': 'draft.unsuccessful'}}))
+        self.assertEquals(
+            handler.tender_client.patch_resource_item.mock_calls[0],
+            call(resource.data.id, {'data': {'status': 'draft.unsuccessful', 'unsuccessfulReason': reason}})
+        )
         handler.tender_client.patch_resource_item.reset_mock()
 
         # test with empty list supplier in catalogue category
         handler.catalogues_client.profiles.get_profile.side_effect = (munchify(deepcopy(TEST_PROFILE)),)
-        handler.catalogues_client.categories.get_category_suppliers.side_effect = (munchify({'data': []}),)
+        handler.catalogues_client.categories.get_category_suppliers.side_effect = \
+            (munchify({'data': [{'status': 'suspended'}]}),)
 
         handler.process_resource(resource.data)
+        reason = u"В обраному профілі немає активних постачальників"
         self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
-        self.assertEquals(handler.tender_client.patch_resource_item.mock_calls[0],
-                          call(resource.data.id, {'data': {'status': 'draft.unsuccessful'}}))
+        self.assertEquals(
+            handler.tender_client.patch_resource_item.mock_calls[0],
+            call(resource.data.id, {'data': {'status': 'draft.unsuccessful', 'unsuccessfulReason': reason}})
+        )
         handler.tender_client.patch_resource_item.reset_mock()
 
         # test successfull switch to `active.tendering`
@@ -166,15 +167,6 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
             }
         }
         self.assertEquals(handler.tender_client.patch_resource_item.mock_calls[0], call(resource.data.id, patch_data))
-
-        # test tender not found
-        handler.catalogues_client.profiles.get_profile.side_effect = (munchify(deepcopy(TEST_PROFILE)),)
-        handler.catalogues_client.categories.get_category_suppliers.side_effect = (munchify(suppliers),)
-        handler.tender_client.patch_resource_item.side_effect = (not_found_exception,)
-
-        handler.process_resource(resource.data)
-        self.assertEquals(len(logger.critical.mock_calls), 1)
-        self.assertEquals(logger.critical.mock_calls[0], call("Tender {} not found".format(resource.data.id)))
 
 
 def suite():
