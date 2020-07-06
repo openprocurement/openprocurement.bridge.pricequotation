@@ -103,7 +103,8 @@ class PQSecondPhaseCommit(HandlerTemplate):
 
             try:
                 suppliers = self.catalogues_client.categories.get_category_suppliers(profile.data.relatedCategory)
-                if len(suppliers.data) == 0:
+                shortlisted_firms = [sf for sf in suppliers.data if sf.status == 'active']
+                if len(shortlisted_firms) == 0:
                     logger.error(
                         "This category {} doesn`t have qualified suppliers".format(profile.data.relatedCategory)
                     )
@@ -121,7 +122,6 @@ class PQSecondPhaseCommit(HandlerTemplate):
                         item["additionalClassifications"] = profile.data.additionalClassifications
                     item.update({"unit": profile.data.unit, "classification": profile.data.classification})
                     items.append(item)
-                shortlisted_firms = [sf for sf in suppliers.data if sf.status == 'active']
                 for criterion in profile.data.criteria:
                     criterion.pop("code", None)
                     for rq_group in criterion.requirementGroups:
