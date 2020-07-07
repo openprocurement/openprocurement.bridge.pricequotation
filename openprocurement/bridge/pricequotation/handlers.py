@@ -70,10 +70,12 @@ class PQSecondPhaseCommit(HandlerTemplate):
                                                    api_version=self.handler_config.get("catalogue_api_version"),
                                                    user_agent="priceQuotationBot")
 
-    def decline_resource(self, resource):
+    def decline_resource(self, resource, reason):
         status = "draft.unsuccessful"
-        self.tender_client.patch_resource_item(resource["id"], {"data": {"status": status}})
-        logger.info("Switch tender {} to `{}`".format(resource["id"], status),
+        self.tender_client.patch_resource_item(
+            resource["id"], {"data": {"status": status, "unsuccessfulReason": reason}}
+        )
+        logger.info("Switch tender %s to `%s` with reason '%s'" % (resource["id"], status, reason),
                     extra=journal_context({"MESSAGE_ID": "tender_switched"},
                                           params={"TENDER_ID": resource["id"], "STATUS": status}))
 
@@ -91,63 +93,56 @@ class PQSecondPhaseCommit(HandlerTemplate):
                 profile = self.catalogues_client.profiles.get_profile(resource.get("profile", ""))
             except ResourceNotFound:
                 logger.error("Pofile {} not found in catalouges.".format(resource.get("profile", "")))
-                self.decline_resource(resource)
+                reason = u"Обраний профіль не існує в системі Prozorro.Market"
+                self.decline_resource(resource, reason)
                 return
 
             if profile.data.status != "active":
                 logger.error("Pofile {} status '{}' not equal 'active', tender {}".format(profile.data.id,
                                                                                           profile.data.status,
                                                                                           resource["id"]))
-                self.decline_resource(resource)
+                reason = u"Обраний профіль неактивний в системі Prozorro.Market"
+                self.decline_resource(resource, reason)
                 return
 
-            try:
-                suppliers = self.catalogues_client.categories.get_category_suppliers(profile.data.relatedCategory)
-                if len(suppliers.data) == 0:
-                    logger.error(
-                        "This category {} doesn`t have qualified suppliers".format(profile.data.relatedCategory)
-                    )
-                    self.decline_resource(resource)
-                    return
-            except ResourceNotFound:
-                logger.error("Category {} not found.".format(profile.data.relatedCategory))
-                self.decline_resource(resource)
+
+            suppliers = self.catalogues_client.categories.get_category_suppliers(profile.data.relatedCategory)
+            shortlisted_firms = [sf for sf in suppliers.data if sf.status == "active"]
+            if len(shortlisted_firms) == 0:
+                logger.error(
+                    "This category {} doesn`t have qualified suppliers".format(profile.data.relatedCategory)
+                )
+                reason = u"В обраному профілі немає активних постачальників"
+                self.decline_resource(resource, reason)
                 return
 
-            try:
-                items = []
-                for item in resource["items"]:
-                    if "additionalClassifications" in profile.data:
-                        item["additionalClassifications"] = profile.data.additionalClassifications
-                    item.update({"unit": profile.data.unit, "classification": profile.data.classification})
-                    items.append(item)
-                shortlisted_firms = [sf for sf in suppliers.data if sf.status == 'active']
-                for criterion in profile.data.criteria:
-                    criterion.pop("code", None)
-                    for rq_group in criterion.requirementGroups:
-                        for rq in rq_group.requirements:
-                            if rq.dataType == 'string':
-                                continue
-                            for key in requirement_keys:
-                                if key in rq:
-                                    rq[key] = str(rq[key])
+            items = []
+            for item in resource["items"]:
+                if "additionalClassifications" in profile.data:
+                    item["additionalClassifications"] = profile.data.additionalClassifications
+                item.update({"unit": profile.data.unit, "classification": profile.data.classification})
+                items.append(item)
+            for criterion in profile.data.criteria:
+                criterion.pop("code", None)
+                for rq_group in criterion.requirementGroups:
+                    for rq in rq_group.requirements:
+                        if rq.dataType == 'string':
+                            continue
+                        for key in requirement_keys:
+                            if key in rq:
+                                rq[key] = str(rq[key])
 
-                data = {
-                    "data": {
-                        "criteria": profile.data.criteria,
-                        "items": items,
-                        "shortlistedFirms": shortlisted_firms,
-                        "status": status
-                    }
+            data = {
+                "data": {
+                    "criteria": profile.data.criteria,
+                    "items": items,
+                    "shortlistedFirms": shortlisted_firms,
+                    "status": status
                 }
-                self.tender_client.patch_resource_item(resource["id"], data)
-                logger.info("Successful switch tender {} to `{}`".format(resource["id"], status),
-                            extra=journal_context({"MESSAGE_ID": "tender_switched"},
-                                                  params={"TENDER_ID": resource["id"], "STATUS": status}))
-            except ResourceNotFound:
-                logger.critical("Tender {} not found".format(resource["id"]))
-            except UnprocessableEntity as e:
-                logger.critical("Fail patch tender {} with error: {}".format(resource["id"], e.message))
-                self.tender_client.patch_resource_item(resource["id"], {"data": {"status": "draft.unsuccessful"}})
-                logger.info("Switch tender {} to draft.unsuccessful".format(resource["id"]))
+            }
+            self.tender_client.patch_resource_item(resource["id"], data)
+            logger.info("Successful switch tender {} to `{}`".format(resource["id"], status),
+                        extra=journal_context({"MESSAGE_ID": "tender_switched"},
+                                                params={"TENDER_ID": resource["id"], "STATUS": status}))
+
         self._put_resource_in_cache(resource)
