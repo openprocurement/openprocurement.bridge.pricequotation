@@ -100,7 +100,7 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
         self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
         self.assertEquals(
             handler.tender_client.patch_resource_item.mock_calls[0],
-            call(resource.data.id, {'data': {'status': 'draft.unsuccessful', 'unsuccessfulReason': reason}})
+            call(resource.data.id, {'data': {'status': 'draft.unsuccessful', 'unsuccessfulReason': [reason]}})
         )
         handler.tender_client.patch_resource_item.reset_mock()
 
@@ -114,7 +114,7 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
         self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
         self.assertEquals(
             handler.tender_client.patch_resource_item.mock_calls[0],
-            call(resource.data.id, {'data': {'status': 'draft.unsuccessful', 'unsuccessfulReason': reason}})
+            call(resource.data.id, {'data': {'status': 'draft.unsuccessful', 'unsuccessfulReason': [reason]}})
         )
         handler.tender_client.patch_resource_item.reset_mock()
 
@@ -128,7 +128,7 @@ class TestPQSecondPhaseCommit(unittest.TestCase):
         self.assertEquals(len(handler.tender_client.patch_resource_item.mock_calls), 1)
         self.assertEquals(
             handler.tender_client.patch_resource_item.mock_calls[0],
-            call(resource.data.id, {'data': {'status': 'draft.unsuccessful', 'unsuccessfulReason': reason}})
+            call(resource.data.id, {'data': {'status': 'draft.unsuccessful', 'unsuccessfulReason': [reason]}})
         )
         handler.tender_client.patch_resource_item.reset_mock()
 

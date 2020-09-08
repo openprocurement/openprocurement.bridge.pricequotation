@@ -73,7 +73,7 @@ class PQSecondPhaseCommit(HandlerTemplate):
     def decline_resource(self, resource, reason):
         status = "draft.unsuccessful"
         self.tender_client.patch_resource_item(
-            resource["id"], {"data": {"status": status, "unsuccessfulReason": reason}}
+            resource["id"], {"data": {"status": status, "unsuccessfulReason": [reason]}}
         )
         logger.info("Switch tender %s to `%s` with reason '%s'" % (resource["id"], status, reason),
                     extra=journal_context({"MESSAGE_ID": "tender_switched"},
